@@ -1,0 +1,58 @@
+"use client"
+
+import Image from "next/image"
+import { Phone } from "lucide-react"
+import { NotificationsPanel } from "./notifications-panel"
+
+interface HeaderProps {
+  activeView: "dashboard" | "nuevo-reclamo"
+  onViewChange: (view: "dashboard" | "nuevo-reclamo") => void
+}
+
+export function Header({ activeView, onViewChange }: HeaderProps) {
+  return (
+    <header className="border-b border-border bg-card">
+      <div className="flex h-14 md:h-16 items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Image
+            src="/logo-municipalidad.png"
+            alt="Logo Municipalidad"
+            width={48}
+            height={48}
+            className="object-contain w-12 h-12 sm:w-14 sm:h-14 shrink-0"
+          />
+          <span className="text-sm sm:text-base md:text-lg font-semibold text-foreground truncate">
+            <span className="hidden sm:inline">Centro de Atención Municipal</span>
+            <span className="sm:hidden">CAM</span>
+          </span>
+        </div>
+        <nav className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <NotificationsPanel />
+          <button
+            onClick={() => onViewChange("dashboard")}
+            className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+              activeView === "dashboard"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span className="hidden sm:inline">Dashboard</span>
+            <span className="sm:hidden">Dash</span>
+          </button>
+          <button
+            onClick={() => onViewChange("nuevo-reclamo")}
+            className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+              activeView === "nuevo-reclamo"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Nuevo Reclamo</span>
+            <span className="sm:hidden">Nuevo</span>
+          </button>
+        </nav>
+      </div>
+    </header>
+  )
+}
