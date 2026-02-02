@@ -23,6 +23,8 @@ const taskTypes: TaskType[] = [
 
 const statuses: Status[] = ["URGENTE", "ESPERA", "LISTO"]
 
+const zones: Zone[] = ["Norte", "Sur", "Centro", "Este", "Oeste"]
+
 const names = [
   "María González",
   "Juan Pérez",
@@ -98,6 +100,7 @@ export function generateMockComplaints(count: number): Complaint[] {
       sector: randomItem(sectors),
       taskType: randomItem(taskTypes),
       status: randomItem(statuses),
+      zone: randomItem(zones),
     })
   }
   

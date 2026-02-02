@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import type { Complaint, Status, Sector, TaskType } from "@/lib/types"
+import type { Complaint, Status, Sector, TaskType, Zone } from "@/lib/types"
 import { initialComplaints } from "@/lib/mock-data"
 import { notificationStore } from "@/lib/notification-store"
 import { Header } from "@/components/header"
@@ -49,6 +49,7 @@ export default function Home() {
       description: string
       sector: Sector
       taskType: TaskType
+      zone: Zone
     }) => {
       const newComplaint: Complaint = {
         id: `RECLAMO-${String(2000 + complaints.length).padStart(4, "0")}`,

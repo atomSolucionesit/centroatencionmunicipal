@@ -6,8 +6,8 @@ import { useState } from "react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Phone, MapPin, User, Clock } from "lucide-react"
-import type { Sector, TaskType } from "@/lib/types"
-import { SECTORS, TASK_TYPES } from "@/lib/types"
+import type { Sector, TaskType, Zone } from "@/lib/types"
+import { SECTORS, TASK_TYPES, ZONES } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,7 @@ interface ComplaintFormProps {
     description: string
     sector: Sector
     taskType: TaskType
+    zone: Zone
   }) => void
 }
 
@@ -39,6 +40,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const [description, setDescription] = useState("")
   const [sector, setSector] = useState<Sector | "">("")
   const [taskType, setTaskType] = useState<TaskType | "">("")
+  const [zone, setZone] = useState<Zone | "">("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const now = new Date()
@@ -46,7 +48,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!citizenName || !address || !contactInfo || !description || !sector || !taskType) {
+    if (!citizenName || !address || !contactInfo || !description || !sector || !taskType || !zone) {
       return
     }
 
@@ -62,6 +64,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
       description,
       sector: sector as Sector,
       taskType: taskType as TaskType,
+      zone: zone as Zone,
     })
 
     // Reset form
@@ -71,10 +74,11 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
     setDescription("")
     setSector("")
     setTaskType("")
+    setZone("")
     setIsSubmitting(false)
   }
 
-  const isValid = citizenName && address && contactInfo && description && sector && taskType
+  const isValid = citizenName && address && contactInfo && description && sector && taskType && zone
 
   return (
     <Card className="bg-card border-border max-w-2xl mx-auto w-full">
@@ -175,8 +179,8 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
             </div>
           </div>
 
-          {/* Sector and Task */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Sector, Task, and Zone */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
                 Sector
@@ -213,6 +217,27 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                   {TASK_TYPES.map((t) => (
                     <SelectItem key={t} value={t}>
                       {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">
+                Zona
+              </Label>
+              <Select
+                value={zone}
+                onValueChange={(value) => setZone(value as Zone)}
+              >
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Seleccionar zona" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ZONES.map((z) => (
+                    <SelectItem key={z} value={z}>
+                      {z}
                     </SelectItem>
                   ))}
                 </SelectContent>
