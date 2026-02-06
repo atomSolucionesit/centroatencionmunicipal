@@ -1,15 +1,17 @@
 "use client"
 
 import Image from "next/image"
-import { Phone } from "lucide-react"
+import { Phone, LogOut } from "lucide-react"
 import { NotificationsPanel } from "./notifications-panel"
+import { Button } from "./ui/button"
 
 interface HeaderProps {
   activeView: "dashboard" | "nuevo-reclamo"
   onViewChange: (view: "dashboard" | "nuevo-reclamo") => void
+  onLogout?: () => void
 }
 
-export function Header({ activeView, onViewChange }: HeaderProps) {
+export function Header({ activeView, onViewChange, onLogout }: HeaderProps) {
   return (
     <header className="border-b border-border bg-card">
       <div className="flex h-14 md:h-16 items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
@@ -51,6 +53,17 @@ export function Header({ activeView, onViewChange }: HeaderProps) {
             <span className="hidden sm:inline">Nuevo Reclamo</span>
             <span className="sm:hidden">Nuevo</span>
           </button>
+          {onLogout && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLogout}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Salir</span>
+            </Button>
+          )}
         </nav>
       </div>
     </header>

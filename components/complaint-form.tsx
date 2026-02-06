@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 interface ComplaintFormProps {
   onSubmit: (data: {
     citizenName: string
+    citizenDni: string
     address: string
     contactInfo: string
     description: string
@@ -34,6 +35,7 @@ interface ComplaintFormProps {
 
 export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const [citizenName, setCitizenName] = useState("")
+  const [citizenDni, setCitizenDni] = useState("")
   const [address, setAddress] = useState("")
   const [contactInfo, setContactInfo] = useState("")
   const [description, setDescription] = useState("")
@@ -46,7 +48,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!citizenName || !address || !contactInfo || !description || !sector || !taskType) {
+    if (!citizenName || !citizenDni || !address || !contactInfo || !description || !sector || !taskType) {
       return
     }
 
@@ -57,6 +59,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
 
     onSubmit({
       citizenName,
+      citizenDni,
       address,
       contactInfo,
       description,
@@ -66,6 +69,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
 
     // Reset form
     setCitizenName("")
+    setCitizenDni("")
     setAddress("")
     setContactInfo("")
     setDescription("")
@@ -74,7 +78,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
     setIsSubmitting(false)
   }
 
-  const isValid = citizenName && address && contactInfo && description && sector && taskType
+  const isValid = citizenName && citizenDni && address && contactInfo && description && sector && taskType
 
   return (
     <Card className="bg-card border-border max-w-2xl mx-auto w-full">
@@ -118,6 +122,22 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                   className="pl-10 bg-secondary border-border"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="citizenDni"
+                className="text-sm font-medium text-foreground"
+              >
+                DNI del ciudadano
+              </Label>
+              <Input
+                id="citizenDni"
+                value={citizenDni}
+                onChange={(e) => setCitizenDni(e.target.value)}
+                placeholder="Ingrese el DNI"
+                className="bg-secondary border-border"
+              />
             </div>
 
             <div className="space-y-2">

@@ -51,6 +51,7 @@ export interface Complaint {
   id: string
   createdAt: Date
   citizenName: string
+  citizenDni: string
   address: string
   contactInfo: string
   description: string
