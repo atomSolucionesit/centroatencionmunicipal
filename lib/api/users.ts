@@ -37,6 +37,11 @@ class UsersApiService {
     const response = await apiClient.put(`/users/${id}`, data);
     return response.data;
   }
+
+  async adminChangePassword(id: string, newPassword: string): Promise<{ mensaje: string }> {
+    const response = await apiClient.put(`/users/${id}/admin-password`, { newPassword });
+    return response.data;
+  }
 }
 
 export const usersApi = new UsersApiService();

@@ -32,6 +32,9 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [open, setOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -101,6 +104,24 @@ export default function UsersPage() {
       }
     } catch (error) {
       toast.error(editingUser ? "Error al actualizar usuario" : "Error al crear usuario");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !newPassword) return;
+    try {
+      const result = await usersApi.adminChangePassword(selectedUser.id, newPassword);
+      if (result.mensaje === "update") {
+        toast.success("Contraseña actualizada exitosamente");
+        setPasswordDialogOpen(false);
+        setSelectedUser(null);
+        setNewPassword("");
+      } else {
+        toast.error("Error al actualizar contraseña");
+      }
+    } catch (error) {
+      toast.error("Error al actualizar contraseña");
     }
   };
 
@@ -268,25 +289,37 @@ export default function UsersPage() {
                         <td className="p-2">{u.tipo}</td>
                         <td className="p-2">{u.area}</td>
                         <td className="p-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingUser(u);
-                              setFormData({
-                                firstName: u.nombre,
-                                lastName: u.apellido,
-                                dni: u.dni,
-                                email: u.correo,
-                                password: "",
-                                role: u.tipo,
-                                area: u.area || "operador"
-                              });
-                              setOpen(true);
-                            }}
-                          >
-                            Editar
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingUser(u);
+                                setFormData({
+                                  firstName: u.nombre,
+                                  lastName: u.apellido,
+                                  dni: u.dni,
+                                  email: u.correo,
+                                  password: "",
+                                  role: u.tipo,
+                                  area: u.area || "operador"
+                                });
+                                setOpen(true);
+                              }}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedUser(u);
+                                setPasswordDialogOpen(true);
+                              }}
+                            >
+                              Cambiar Contraseña
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -295,6 +328,33 @@ export default function UsersPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Cambiar Contraseña</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <Label>Usuario</Label>
+                  <Input value={selectedUser ? `${selectedUser.nombre} ${selectedUser.apellido}` : ""} disabled />
+                </div>
+                <div>
+                  <Label>Nueva Contraseña</Label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Actualizar Contraseña
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
         <Toaster position="bottom-center" />
       </div>
