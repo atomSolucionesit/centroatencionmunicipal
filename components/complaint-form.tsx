@@ -30,6 +30,7 @@ interface ComplaintFormProps {
     description: string
     sector: Sector
     taskType: TaskType
+    area: string
   }) => void
 }
 
@@ -41,6 +42,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const [description, setDescription] = useState("")
   const [sector, setSector] = useState<Sector | "">("")
   const [taskType, setTaskType] = useState<TaskType | "">("")
+  const [area, setArea] = useState<string>("operador")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const now = new Date()
@@ -65,6 +67,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
       description,
       sector: sector as Sector,
       taskType: taskType as TaskType,
+      area,
     })
 
     // Reset form
@@ -75,6 +78,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
     setDescription("")
     setSector("")
     setTaskType("")
+    setArea("operador")
     setIsSubmitting(false)
   }
 
@@ -196,7 +200,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
           </div>
 
           {/* Sector and Task */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
                 Sector
@@ -235,6 +239,25 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                       {t}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">
+                Área
+              </Label>
+              <Select
+                value={area}
+                onValueChange={(value) => setArea(value)}
+              >
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Seleccionar área" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="operador">Operador</SelectItem>
+                  <SelectItem value="corralon">Corralón</SelectItem>
+                  <SelectItem value="alumbrado">Alumbrado</SelectItem>
                 </SelectContent>
               </Select>
             </div>

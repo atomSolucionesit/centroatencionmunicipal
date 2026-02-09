@@ -11,16 +11,31 @@ import { ComplaintsTable } from "./complaints-table"
 interface DashboardProps {
   complaints: Complaint[]
   onStatusChange: (id: string, status: Status) => void
+  onAreaChange?: (id: string, area: string) => void
+  onRefresh?: () => void
+  userRole?: string
+  userArea?: string
 }
 
-export function Dashboard({ complaints, onStatusChange }: DashboardProps) {
+export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh, userRole, userArea }: DashboardProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [selectedSector, setSelectedSector] = useState<Sector | "all">("all")
   const [selectedTask, setSelectedTask] = useState<TaskType | "all">("all")
   const [selectedStatus, setSelectedStatus] = useState<Status | "all">("all")
+  const [searchId, setSearchId] = useState("")
+  const [searchCitizen, setSearchCitizen] = useState("")
+  const [searchAddress, setSearchAddress] = useState("")
+
+  // Filtrar reclamos por área del usuario
+  const areaFilteredComplaints = useMemo(() => {
+    if (userRole === "ADMIN" || userArea === "operador") {
+      return complaints
+    }
+    return complaints.filter(c => c.area === userArea)
+  }, [complaints, userRole, userArea])
 
   const filteredComplaints = useMemo(() => {
-    return complaints.filter((complaint) => {
+    return areaFilteredComplaints.filter((complaint) => {
       if (selectedDate && !isSameDay(complaint.createdAt, selectedDate)) {
         return false
       }
@@ -33,9 +48,18 @@ export function Dashboard({ complaints, onStatusChange }: DashboardProps) {
       if (selectedStatus !== "all" && complaint.status !== selectedStatus) {
         return false
       }
+      if (searchId && !complaint.id.toLowerCase().includes(searchId.toLowerCase())) {
+        return false
+      }
+      if (searchCitizen && !complaint.citizenName.toLowerCase().includes(searchCitizen.toLowerCase())) {
+        return false
+      }
+      if (searchAddress && !complaint.address.toLowerCase().includes(searchAddress.toLowerCase())) {
+        return false
+      }
       return true
     })
-  }, [complaints, selectedDate, selectedSector, selectedTask, selectedStatus])
+  }, [areaFilteredComplaints, selectedDate, selectedSector, selectedTask, selectedStatus, searchId, searchCitizen, searchAddress])
 
   // Group complaints by date
   const groupedByDate = useMemo(() => {
@@ -60,6 +84,9 @@ export function Dashboard({ complaints, onStatusChange }: DashboardProps) {
     setSelectedSector("all")
     setSelectedTask("all")
     setSelectedStatus("all")
+    setSearchId("")
+    setSearchCitizen("")
+    setSearchAddress("")
   }
 
   return (
@@ -79,15 +106,21 @@ export function Dashboard({ complaints, onStatusChange }: DashboardProps) {
           selectedSector={selectedSector}
           selectedTask={selectedTask}
           selectedStatus={selectedStatus}
+          searchId={searchId}
+          searchCitizen={searchCitizen}
+          searchAddress={searchAddress}
           onDateChange={setSelectedDate}
           onSectorChange={setSelectedSector}
           onTaskChange={setSelectedTask}
           onStatusChange={setSelectedStatus}
+          onSearchIdChange={setSearchId}
+          onSearchCitizenChange={setSearchCitizen}
+          onSearchAddressChange={setSearchAddress}
           onClearFilters={handleClearFilters}
         />
 
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Mostrando {filteredComplaints.length} de {complaints.length} reclamos
+          Mostrando {filteredComplaints.length} de {areaFilteredComplaints.length} reclamos
         </div>
       </div>
 
@@ -100,6 +133,10 @@ export function Dashboard({ complaints, onStatusChange }: DashboardProps) {
             <ComplaintsTable
               complaints={dayComplaints}
               onStatusChange={onStatusChange}
+              onAreaChange={onAreaChange}
+              onRefresh={onRefresh}
+              userRole={userRole}
+              userArea={userArea}
             />
           </div>
         ))}

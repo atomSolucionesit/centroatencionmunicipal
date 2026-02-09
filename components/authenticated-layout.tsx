@@ -9,12 +9,12 @@ interface AuthenticatedLayoutProps {
 }
 
 export function AuthenticatedLayout({ children, userRole }: AuthenticatedLayoutProps) {
-  const isAdmin = userRole === "ADMIN"
+  const showSidebar = userRole === "ADMIN" || userRole === "MANAGER"
 
   return (
     <>
-      {isAdmin && <AdminSidebar />}
-      <main className={isAdmin ? "pl-16" : ""}>
+      {showSidebar && <AdminSidebar />}
+      <main className={showSidebar ? "pl-16" : ""}>
         {children}
       </main>
     </>

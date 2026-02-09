@@ -19,6 +19,11 @@ const statusStyles: Record<Status, { bg: string; text: string; dot: string }> = 
     text: "#d97706",
     dot: "#f59e0b",
   },
+  EN_PROCESO: {
+    bg: "rgba(59, 130, 246, 0.12)",
+    text: "#3b82f6",
+    dot: "#3b82f6",
+  },
   LISTO: {
     bg: "rgba(101, 163, 13, 0.12)",
     text: "#65a30d",

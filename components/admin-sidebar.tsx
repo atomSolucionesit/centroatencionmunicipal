@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/hooks/use-auth"
-import { Home, FileText, Users, Settings, LogOut, Truck, Fuel } from "lucide-react"
+import { Home, FileText, Users, Settings, LogOut, Truck, Fuel, ChevronLeft, Menu, ClipboardList } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -9,40 +9,50 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useEffect, useState } from "react"
 
 const menuItems = [
-  { icon: Home, label: "Dashboard", href: "/" },
-  { icon: FileText, label: "Reclamos", href: "/complaints" },
-  { icon: Truck, label: "Vehículos", href: "/vehicles" },
-  { icon: Fuel, label: "Combustible", href: "/fuel-loads" },
-  { icon: Users, label: "Usuarios", href: "/users" },
-  { icon: Settings, label: "Configuración", href: "/settings" },
+  { icon: Home, label: "Dashboard", href: "/dashboard", roles: ["ADMIN", "MANAGER"] },
+  { icon: ClipboardList, label: "Tareas", href: "/tasks", roles: ["ADMIN", "MANAGER"] },
+  { icon: Truck, label: "Vehículos", href: "/vehicles", roles: ["ADMIN"] },
+  { icon: Fuel, label: "Combustible", href: "/fuel-loads", roles: ["ADMIN"] },
+  { icon: Users, label: "Usuarios", href: "/users", roles: ["ADMIN", "MANAGER"] },
 ]
 
 export function AdminSidebar() {
   const { user, logout, isAuthenticated } = useAuth()
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // No renderizar hasta que esté montado del lado del cliente
   if (!mounted) return null
   
-  // No mostrar si no está autenticado o no es ADMIN
-  if (!isAuthenticated || !user || user.role !== "ADMIN") return null
+  if (!isAuthenticated || !user || (user.role !== "ADMIN" && user.role !== "MANAGER")) return null
+
+  if (isCollapsed) {
+    return (
+      <button
+        onClick={() => setIsCollapsed(false)}
+        className="fixed left-2 top-2 z-50 flex items-center justify-center w-10 h-10 rounded-lg bg-background border hover:bg-muted transition-colors"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+    )
+  }
 
   return (
     <TooltipProvider>
-      <aside className="fixed left-0 top-0 h-screen w-16 border-r bg-background flex flex-col">
+      <aside className="fixed left-0 top-0 h-screen w-16 border-r bg-background flex flex-col z-40">
         <div className="border-b p-4 flex justify-center">
           <div className="w-8 h-8 bg-transparent rounded-lg flex items-center justify-center">
-            {/* <span className="text-primary-foreground font-bold text-sm">CA</span> */}
           </div>
         </div>
 
         <nav className="flex-1 space-y-2 p-2">
-          {menuItems.map((item) => {
+          {menuItems
+            .filter(item => item.roles.includes(user.role))
+            .map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
             
@@ -69,7 +79,20 @@ export function AdminSidebar() {
           })}
         </nav>
 
-        <div className="border-t p-2">
+        <div className="border-t p-2 space-y-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setIsCollapsed(true)}
+                className="flex items-center justify-center w-12 h-12 rounded-lg hover:bg-muted transition-colors"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Ocultar</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <button

@@ -1,9 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { Phone, LogOut } from "lucide-react"
+import Link from "next/link"
+import { Phone, LogOut, Users } from "lucide-react"
 import { NotificationsPanel } from "./notifications-panel"
 import { Button } from "./ui/button"
+import { useAuth } from "@/hooks/use-auth"
 
 interface HeaderProps {
   activeView: "dashboard" | "nuevo-reclamo"
@@ -12,6 +14,8 @@ interface HeaderProps {
 }
 
 export function Header({ activeView, onViewChange, onLogout }: HeaderProps) {
+  const { user } = useAuth()
+  
   return (
     <header className="border-b border-border bg-card">
       <div className="flex h-14 md:h-16 items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
@@ -53,6 +57,14 @@ export function Header({ activeView, onViewChange, onLogout }: HeaderProps) {
             <span className="hidden sm:inline">Nuevo Reclamo</span>
             <span className="sm:hidden">Nuevo</span>
           </button>
+          {user?.role === "ADMIN" && (
+            <Link href="/users">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Usuarios</span>
+              </Button>
+            </Link>
+          )}
           {onLogout && (
             <Button
               variant="ghost"

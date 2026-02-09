@@ -13,30 +13,37 @@ interface VehicleFormProps {
     brand: string
     model: string
     year: number
+    type: string
     fuelType: string
+    horsePower?: number
   }) => void
 }
 
 const FUEL_TYPES = ["DIESEL", "NAFTA", "GNC", "ELECTRICO"]
+const VEHICLE_TYPES = ["CAMION", "MAQUINARIA"]
 
 export function VehicleForm({ onSubmit }: VehicleFormProps) {
   const [licensePlate, setLicensePlate] = useState("")
   const [brand, setBrand] = useState("")
   const [model, setModel] = useState("")
   const [year, setYear] = useState("")
+  const [type, setType] = useState("")
   const [fuelType, setFuelType] = useState("")
+  const [horsePower, setHorsePower] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!licensePlate || !brand || !model || !year || !fuelType) return
+    if (!licensePlate || !brand || !model || !year || !type || !fuelType) return
 
     onSubmit({
       licensePlate,
       brand,
       model,
       year: parseInt(year),
+      type,
       fuelType,
+      horsePower: horsePower ? parseInt(horsePower) : undefined,
     })
 
     // Reset form
@@ -44,10 +51,12 @@ export function VehicleForm({ onSubmit }: VehicleFormProps) {
     setBrand("")
     setModel("")
     setYear("")
+    setType("")
     setFuelType("")
+    setHorsePower("")
   }
 
-  const isValid = licensePlate && brand && model && year && fuelType
+  const isValid = licensePlate && brand && model && year && type && fuelType
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -103,7 +112,25 @@ export function VehicleForm({ onSubmit }: VehicleFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Tipo de Combustible</Label>
+              <Label>Tipo</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {VEHICLE_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Combustible</Label>
               <Select value={fuelType} onValueChange={setFuelType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar" />
@@ -116,6 +143,17 @@ export function VehicleForm({ onSubmit }: VehicleFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="horsePower">HP (opcional)</Label>
+              <Input
+                id="horsePower"
+                type="number"
+                value={horsePower}
+                onChange={(e) => setHorsePower(e.target.value)}
+                placeholder="150"
+              />
             </div>
           </div>
 

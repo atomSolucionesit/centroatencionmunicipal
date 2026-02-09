@@ -1,4 +1,4 @@
-export type Status = "URGENTE" | "ESPERA" | "LISTO"
+export type Status = "URGENTE" | "ESPERA" | "EN_PROCESO" | "LISTO"
 
 export type UserRole = "call-center" | "sector-manager" | "driver" | "admin"
 
@@ -57,6 +57,7 @@ export interface Complaint {
   description: string
   sector: Sector
   taskType: TaskType
+  area?: string
   status: Status
   zone: Zone
   assignedDriverId?: string
@@ -86,7 +87,7 @@ export const TASK_TYPES: TaskType[] = [
   "Atmosférico",
 ]
 
-export const STATUSES: Status[] = ["URGENTE", "ESPERA", "LISTO"]
+export const STATUSES: Status[] = ["URGENTE", "ESPERA", "EN_PROCESO", "LISTO"]
 
 export interface StatusChangeNotification {
   id: string

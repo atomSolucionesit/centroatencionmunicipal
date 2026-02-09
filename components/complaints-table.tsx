@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { MoreHorizontal, Eye } from "lucide-react"
+import { MoreHorizontal, Eye, MessageSquare } from "lucide-react"
 import type { Complaint, Status } from "@/lib/types"
 import { STATUSES } from "@/lib/types"
 import { StatusBadge } from "./status-badge"
@@ -30,17 +31,80 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { complaintsApi } from "@/lib/api/complaints"
+import { toast } from "sonner"
 
 interface ComplaintsTableProps {
   complaints: Complaint[]
   onStatusChange: (id: string, status: Status) => void
+  onAreaChange?: (id: string, area: string) => void
+  userRole?: string
+  userArea?: string
+  onRefresh?: () => void
 }
 
 export function ComplaintsTable({
   complaints,
   onStatusChange,
+  onAreaChange,
+  userRole,
+  userArea,
+  onRefresh,
 }: ComplaintsTableProps) {
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null)
+  const [observationsComplaint, setObservationsComplaint] = useState<any>(null)
+  const [observation, setObservation] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchObservation, setSearchObservation] = useState("")
+  const router = useRouter()
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  console.log('ComplaintsTable - userRole:', userRole, 'userArea:', userArea)
+
+  const loadObservations = async (complaintId: string) => {
+    try {
+      const data = await complaintsApi.getComplaint(complaintId)
+      setObservationsComplaint(data)
+    } catch (error) {
+      console.error('Error loading observations:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (observationsComplaint) {
+      intervalRef.current = setInterval(() => {
+        loadObservations(observationsComplaint.id)
+      }, 3000)
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [observationsComplaint?.id])
+
+  const handleAddObservation = async () => {
+    if (!observation.trim() || !observationsComplaint) return
+
+    setIsSubmitting(true)
+    try {
+      await complaintsApi.addObservation(observationsComplaint.id, observation)
+      toast.success("Observación agregada")
+      setObservation("")
+      await loadObservations(observationsComplaint.id)
+      // onRefresh?.()
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al agregar observación")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const filteredObservations = observationsComplaint?.observations?.filter((obs: any) => {
+    if (!searchObservation) return true
+    const searchLower = searchObservation.toLowerCase()
+    return obs.observation.toLowerCase().includes(searchLower) ||
+           format(new Date(obs.createdAt), "dd/MM/yyyy HH:mm").includes(searchLower)
+  }) || []
 
   if (complaints.length === 0) {
     return (
@@ -130,6 +194,14 @@ export function ComplaintsTable({
                         <Eye className="mr-2 h-4 w-4" />
                         Ver detalles
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          await loadObservations(complaint.id)
+                        }}
+                      >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Observaciones
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
                       <DropdownMenuSeparator />
@@ -144,6 +216,21 @@ export function ComplaintsTable({
                           <StatusBadge status={status} />
                         </DropdownMenuItem>
                       ))}
+                      {(userRole === "ADMIN" || userRole === "OPERATOR") && onAreaChange && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Cambiar área</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {["operador", "corralon", "alumbrado"].map((area) => (
+                            <DropdownMenuItem
+                              key={area}
+                              onClick={() => onAreaChange(complaint.id, area)}
+                            >
+                              {area.charAt(0).toUpperCase() + area.slice(1)}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -264,6 +351,73 @@ export function ComplaintsTable({
                 <p className="text-sm leading-relaxed bg-secondary/50 rounded-lg p-3">
                   {selectedComplaint.description}
                 </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!observationsComplaint} onOpenChange={() => {
+        setObservationsComplaint(null)
+        setSearchObservation("")
+      }}>
+        <DialogContent className="w-[95vw] max-w-[700px] max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <MessageSquare className="h-5 w-5" />
+              Observaciones - {observationsComplaint?.id}
+            </DialogTitle>
+          </DialogHeader>
+          {observationsComplaint && (
+            <div className="flex flex-col gap-4 flex-1 min-h-0">
+              {(userRole === "ADMIN" || (userRole === "MANAGER" && (userArea === "corralon" || userArea === "alumbrado"))) && (
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Agregar observación..."
+                    value={observation}
+                    onChange={(e) => setObservation(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <Button 
+                    onClick={handleAddObservation} 
+                    disabled={isSubmitting || !observation.trim()}
+                    className="w-full"
+                  >
+                    {isSubmitting ? "Guardando..." : "Agregar Observación"}
+                  </Button>
+                </div>
+              )}
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar por fecha o contenido..."
+                  value={searchObservation}
+                  onChange={(e) => setSearchObservation(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                />
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                {filteredObservations.length > 0 ? (
+                  [...filteredObservations].reverse().map((obs: any) => (
+                    <div key={obs.id} className="border-l-2 border-primary pl-4 py-2 bg-secondary/30 rounded-r">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {format(new Date(obs.createdAt), "dd/MM/yyyy - HH:mm", { locale: es })}
+                        </p>
+                        <p className="text-xs text-muted-foreground italic">
+                          {obs.user?.firstName || 'Usuario'}
+                        </p>
+                      </div>
+                      <p className="text-sm">{obs.observation}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    {searchObservation ? 'No se encontraron observaciones' : 'No hay observaciones'}
+                  </p>
+                )}
               </div>
             </div>
           )}

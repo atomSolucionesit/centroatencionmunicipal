@@ -6,7 +6,9 @@ export interface Vehicle {
   brand: string;
   model: string;
   year: number;
+  type: string;
   fuelType: string;
+  horsePower?: number;
   status: string;
   createdAt: string;
 }
@@ -16,7 +18,9 @@ export interface CreateVehicleRequest {
   brand: string;
   model: string;
   year: number;
+  type: string;
   fuelType: string;
+  horsePower?: number;
 }
 
 class VehiclesApiService {

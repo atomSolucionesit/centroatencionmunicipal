@@ -1,4 +1,4 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 export interface ApiComplaint {
   id: string;
@@ -9,7 +9,8 @@ export interface ApiComplaint {
   description: string;
   sector: string;
   taskType: string;
-  status: 'URGENTE' | 'ESPERA' | 'LISTO';
+  area?: string;
+  status: 'URGENTE' | 'ESPERA' | 'EN_PROCESO' | 'LISTO';
   assignedDriverId?: string;
   taskId?: string;
   latitude?: number;
@@ -26,6 +27,12 @@ export interface ApiComplaint {
     status: string;
     createdAt: string;
   };
+  observations?: {
+    id: string;
+    observation: string;
+    createdAt: string;
+    userId: string;
+  }[];
 }
 
 export interface CreateComplaintRequest {
@@ -60,6 +67,11 @@ class ComplaintsApiService {
     return response.data;
   }
 
+  async updateComplaintArea(id: string, area: string): Promise<ApiComplaint> {
+    const response = await apiClient.patch(`/complaints/${id}/area`, { area });
+    return response.data;
+  }
+
   async assignDriver(id: string, driverId: string): Promise<ApiComplaint> {
     const response = await apiClient.patch(`/complaints/${id}/assign`, { driverId });
     return response.data;
@@ -67,6 +79,16 @@ class ComplaintsApiService {
 
   async convertToTask(id: string): Promise<any> {
     const response = await apiClient.post(`/complaints/${id}/convert-to-task`);
+    return response.data;
+  }
+
+  async addObservation(id: string, observation: string): Promise<any> {
+    const response = await apiClient.post(`/complaints/${id}/observations`, { observation });
+    return response.data;
+  }
+
+  async getComplaint(id: string): Promise<ApiComplaint> {
+    const response = await apiClient.get(`/complaints/${id}`);
     return response.data;
   }
 }

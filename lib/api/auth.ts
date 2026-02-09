@@ -13,10 +13,11 @@ export interface LoginResponse {
     firstName: string;
     lastName: string;
     role: string;
+    area?: string;
   };
 }
 
-const ALLOWED_ROLES = ['ADMIN', 'CALL_CENTER'];
+const ALLOWED_ROLES = ['ADMIN', 'OPERATOR', 'MANAGER'];
 
 class AuthApiService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
