@@ -91,6 +91,11 @@ class ComplaintsApiService {
     const response = await apiClient.get(`/complaints/${id}`);
     return response.data;
   }
+
+  async deleteComplaint(id: string): Promise<{ message: string }> {
+    const response = await apiClient.delete(`/complaints/${id}`);
+    return response.data;
+  }
 }
 
 export const complaintsApi = new ComplaintsApiService();

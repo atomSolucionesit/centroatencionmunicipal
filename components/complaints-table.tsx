@@ -60,8 +60,6 @@ export function ComplaintsTable({
   const router = useRouter()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  console.log('ComplaintsTable - userRole:', userRole, 'userArea:', userArea)
-
   const loadObservations = async (complaintId: string) => {
     try {
       const data = await complaintsApi.getComplaint(complaintId)
@@ -202,6 +200,24 @@ export function ComplaintsTable({
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Observaciones
                       </DropdownMenuItem>
+                      {(userRole === "ADMIN" || userRole === "MANAGER") && (
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            if (confirm("¿Está seguro de eliminar este reclamo?")) {
+                              try {
+                                await complaintsApi.deleteComplaint(complaint.id)
+                                toast.success("Reclamo eliminado")
+                                onRefresh?.()
+                              } catch (error) {
+                                toast.error("Error al eliminar reclamo")
+                              }
+                            }
+                          }}
+                          className="text-destructive"
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
                       <DropdownMenuSeparator />
@@ -280,6 +296,32 @@ export function ComplaintsTable({
                     <Eye className="mr-2 h-4 w-4" />
                     Ver detalles
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await loadObservations(complaint.id)
+                    }}
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Observaciones
+                  </DropdownMenuItem>
+                  {(userRole === "ADMIN" || userRole === "MANAGER") && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        if (confirm("¿Está seguro de eliminar este reclamo?")) {
+                          try {
+                            await complaintsApi.deleteComplaint(complaint.id)
+                            toast.success("Reclamo eliminado")
+                            onRefresh?.()
+                          } catch (error) {
+                            toast.error("Error al eliminar reclamo")
+                          }
+                        }
+                      }}
+                      className="text-destructive"
+                    >
+                      Eliminar
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
                   <DropdownMenuSeparator />
