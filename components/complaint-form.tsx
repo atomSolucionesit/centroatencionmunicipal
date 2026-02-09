@@ -2,12 +2,12 @@
 
 import React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { Phone, MapPin, User, Clock } from "lucide-react"
+import { Phone, MapPin, User, Clock, Plus } from "lucide-react"
 import type { Sector, TaskType } from "@/lib/types"
-import { SECTORS, TASK_TYPES } from "@/lib/types"
+import { configApi } from "@/lib/api/config"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface ComplaintFormProps {
   onSubmit: (data: {
@@ -44,19 +51,82 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const [taskType, setTaskType] = useState<TaskType | "">("")
   const [area, setArea] = useState<string>("operador")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const [sectors, setSectors] = useState<string[]>([])
+  const [taskTypes, setTaskTypes] = useState<string[]>([])
+  const [newSectorName, setNewSectorName] = useState("")
+  const [newTaskTypeName, setNewTaskTypeName] = useState("")
+  const [isCreatingSector, setIsCreatingSector] = useState(false)
+  const [isCreatingTaskType, setIsCreatingTaskType] = useState(false)
+  const [openSectorDialog, setOpenSectorDialog] = useState(false)
+  const [openTaskTypeDialog, setOpenTaskTypeDialog] = useState(false)
 
   const now = new Date()
+
+  useEffect(() => {
+    loadSectors()
+    loadTaskTypes()
+  }, [])
+
+  const loadSectors = async () => {
+    try {
+      const data = await configApi.getSectors()
+      setSectors(data.map((s) => s.name))
+    } catch (error) {
+      console.error("Error cargando sectores:", error)
+    }
+  }
+
+  const loadTaskTypes = async () => {
+    try {
+      const data = await configApi.getTaskTypes()
+      setTaskTypes(data.map((t) => t.name))
+    } catch (error) {
+      console.error("Error cargando tipos de tarea:", error)
+    }
+  }
+
+  const handleCreateSector = async () => {
+    if (!newSectorName.trim()) return
+    
+    setIsCreatingSector(true)
+    try {
+      await configApi.createSector(newSectorName)
+      await loadSectors()
+      setNewSectorName("")
+      setOpenSectorDialog(false)
+    } catch (error) {
+      console.error("Error creando sector:", error)
+    } finally {
+      setIsCreatingSector(false)
+    }
+  }
+
+  const handleCreateTaskType = async () => {
+    if (!newTaskTypeName.trim()) return
+    
+    setIsCreatingTaskType(true)
+    try {
+      await configApi.createTaskType(newTaskTypeName)
+      await loadTaskTypes()
+      setNewTaskTypeName("")
+      setOpenTaskTypeDialog(false)
+    } catch (error) {
+      console.error("Error creando tipo de tarea:", error)
+    } finally {
+      setIsCreatingTaskType(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!citizenName || !citizenDni || !address || !contactInfo || !description || !sector || !taskType) {
+    if (!citizenName || !address || !contactInfo || !description || !sector || !taskType) {
       return
     }
 
     setIsSubmitting(true)
 
-    // Simulate a brief delay
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     onSubmit({
@@ -70,7 +140,6 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
       area,
     })
 
-    // Reset form
     setCitizenName("")
     setCitizenDni("")
     setAddress("")
@@ -82,7 +151,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
     setIsSubmitting(false)
   }
 
-  const isValid = citizenName && citizenDni && address && contactInfo && description && sector && taskType
+  const isValid = citizenName && address && contactInfo && description && sector && taskType
 
   return (
     <Card className="bg-card border-border max-w-2xl mx-auto w-full">
@@ -133,7 +202,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                 htmlFor="citizenDni"
                 className="text-sm font-medium text-foreground"
               >
-                DNI del ciudadano
+                DNI del ciudadano (opcional)
               </Label>
               <Input
                 id="citizenDni"
@@ -202,9 +271,37 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
           {/* Sector and Task */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                Sector
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-foreground">
+                  Sector
+                </Label>
+                <Dialog open={openSectorDialog} onOpenChange={setOpenSectorDialog}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="ghost" size="sm" className="h-6 px-2">
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Crear Nuevo Sector</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <Input
+                        value={newSectorName}
+                        onChange={(e) => setNewSectorName(e.target.value)}
+                        placeholder="Nombre del sector"
+                      />
+                      <Button
+                        onClick={handleCreateSector}
+                        disabled={isCreatingSector || !newSectorName.trim()}
+                        className="w-full"
+                      >
+                        {isCreatingSector ? "Creando..." : "Crear Sector"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Select
                 value={sector}
                 onValueChange={(value) => setSector(value as Sector)}
@@ -213,7 +310,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                   <SelectValue placeholder="Seleccionar sector" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SECTORS.map((s) => (
+                  {sectors.map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
                     </SelectItem>
@@ -223,9 +320,37 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground">
-                Tipo de tarea
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-foreground">
+                  Tipo de tarea
+                </Label>
+                <Dialog open={openTaskTypeDialog} onOpenChange={setOpenTaskTypeDialog}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="ghost" size="sm" className="h-6 px-2">
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Crear Nuevo Tipo de Tarea</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <Input
+                        value={newTaskTypeName}
+                        onChange={(e) => setNewTaskTypeName(e.target.value)}
+                        placeholder="Nombre del tipo de tarea"
+                      />
+                      <Button
+                        onClick={handleCreateTaskType}
+                        disabled={isCreatingTaskType || !newTaskTypeName.trim()}
+                        className="w-full"
+                      >
+                        {isCreatingTaskType ? "Creando..." : "Crear Tipo de Tarea"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Select
                 value={taskType}
                 onValueChange={(value) => setTaskType(value as TaskType)}
@@ -234,7 +359,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                   <SelectValue placeholder="Seleccionar tarea" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((t) => (
+                  {taskTypes.map((t) => (
                     <SelectItem key={t} value={t}>
                       {t}
                     </SelectItem>
