@@ -38,6 +38,8 @@ interface ComplaintFormProps {
     sector: Sector
     taskType: TaskType
     area: string
+    latitude?: number
+    longitude?: number
   }) => void
 }
 
@@ -127,6 +129,22 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
 
     setIsSubmitting(true)
 
+    let latitude: number | undefined
+    let longitude: number | undefined
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ", Paso de los Libres, Corrientes, Argentina")}&format=json&limit=1`
+      )
+      const data = await response.json()
+      if (data && data.length > 0) {
+        latitude = parseFloat(data[0].lat)
+        longitude = parseFloat(data[0].lon)
+      }
+    } catch (error) {
+      console.error("Error geocodificando dirección:", error)
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     onSubmit({
@@ -138,6 +156,8 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
       sector: sector as Sector,
       taskType: taskType as TaskType,
       area,
+      latitude,
+      longitude,
     })
 
     setCitizenName("")

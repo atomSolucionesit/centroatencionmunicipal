@@ -129,6 +129,8 @@ export default function DashboardPage() {
       sector: Sector;
       taskType: TaskType;
       area: string;
+      latitude?: number;
+      longitude?: number;
     }) => {
       try {
         const apiComplaint = await complaintsApi.createComplaint(data);

@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/hooks/use-auth"
-import { Home, FileText, Users, Settings, LogOut, Truck, Fuel, ChevronLeft, Menu, ClipboardList } from "lucide-react"
+import { Home, FileText, Users, Settings, LogOut, Truck, Fuel, ChevronLeft, Menu, ClipboardList, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 const menuItems = [
   { icon: Home, label: "Dashboard", href: "/dashboard", roles: ["ADMIN", "MANAGER"] },
   { icon: ClipboardList, label: "Tareas", href: "/tasks", roles: ["ADMIN", "MANAGER"] },
+  { icon: BarChart3, label: "Estadísticas", href: "/statistics", roles: ["ADMIN", "MANAGER"] },
   { icon: Truck, label: "Vehículos", href: "/vehicles", roles: ["ADMIN"] },
   { icon: Fuel, label: "Combustible", href: "/fuel-loads", roles: ["ADMIN"] },
   { icon: Users, label: "Usuarios", href: "/users", roles: ["ADMIN", "MANAGER"] },
