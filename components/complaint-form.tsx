@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Phone, MapPin, User, Clock, Plus } from "lucide-react"
+import dynamic from "next/dynamic"
 import type { Sector, TaskType } from "@/lib/types"
 import { configApi } from "@/lib/api/config"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+
+const LocationPicker = dynamic(() => import("@/components/location-picker").then(mod => ({ default: mod.LocationPicker })), { ssr: false });
 
 interface ComplaintFormProps {
   onSubmit: (data: {
@@ -53,6 +56,8 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
   const [taskType, setTaskType] = useState<TaskType | "">("")
   const [area, setArea] = useState<string>("operador")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [latitude, setLatitude] = useState<number | undefined>()
+  const [longitude, setLongitude] = useState<number | undefined>()
   
   const [sectors, setSectors] = useState<string[]>([])
   const [taskTypes, setTaskTypes] = useState<string[]>([])
@@ -129,22 +134,6 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
 
     setIsSubmitting(true)
 
-    let latitude: number | undefined
-    let longitude: number | undefined
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ", Paso de los Libres, Corrientes, Argentina")}&format=json&limit=1`
-      )
-      const data = await response.json()
-      if (data && data.length > 0) {
-        latitude = parseFloat(data[0].lat)
-        longitude = parseFloat(data[0].lon)
-      }
-    } catch (error) {
-      console.error("Error geocodificando dirección:", error)
-    }
-
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     onSubmit({
@@ -168,6 +157,8 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
     setSector("")
     setTaskType("")
     setArea("operador")
+    setLatitude(undefined)
+    setLongitude(undefined)
     setIsSubmitting(false)
   }
 
@@ -250,6 +241,20 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
                   className="pl-10 bg-secondary border-border"
                 />
               </div>
+              <LocationPicker
+                address={address}
+                onLocationSelect={(lat, lng) => {
+                  setLatitude(lat)
+                  setLongitude(lng)
+                }}
+                initialLat={latitude}
+                initialLng={longitude}
+              />
+              {latitude && longitude && (
+                <p className="text-xs text-muted-foreground">
+                  Coordenadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
