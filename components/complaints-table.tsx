@@ -153,7 +153,7 @@ export function ComplaintsTable({
                 className="border-border hover:bg-secondary/30"
               >
                 <TableCell className="text-sm text-muted-foreground font-mono">
-                  {format(complaint.createdAt, "HH:mm", { locale: es })}
+                  {format(new Date(complaint.createdAt), "HH:mm", { locale: es })}
                 </TableCell>
                 <TableCell className="text-sm font-mono text-muted-foreground">
                   {complaint.id}
@@ -340,7 +340,7 @@ export function ComplaintsTable({
               </DropdownMenu>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-2 border-t border-border">
-              <span className="font-mono">{format(complaint.createdAt, "HH:mm", { locale: es })}</span>
+              <span className="font-mono">{format(new Date(complaint.createdAt), "HH:mm", { locale: es })}</span>
               <span>•</span>
               <span className="truncate">{complaint.sector}</span>
               <span>•</span>
@@ -364,7 +364,7 @@ export function ComplaintsTable({
                 <div>
                   <p className="text-muted-foreground mb-1">Fecha y hora</p>
                   <p className="font-medium">
-                    {format(selectedComplaint.createdAt, "dd/MM/yyyy HH:mm", { locale: es })}
+                    {format(new Date(selectedComplaint.createdAt), "dd/MM/yyyy HH:mm", { locale: es })}
                   </p>
                 </div>
                 <div>
