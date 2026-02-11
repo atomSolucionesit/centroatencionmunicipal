@@ -65,7 +65,7 @@ export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh,
   const groupedByDate = useMemo(() => {
     const groups: Record<string, Complaint[]> = {}
     for (const complaint of filteredComplaints) {
-      const dateKey = format(complaint.createdAt, "yyyy-MM-dd")
+      const dateKey = format(new Date(complaint.createdAt), "yyyy-MM-dd")
       if (!groups[dateKey]) {
         groups[dateKey] = []
       }
@@ -74,7 +74,7 @@ export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh,
     return Object.entries(groups)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([dateKey, items]) => ({
-        date: new Date(dateKey),
+        date: new Date(dateKey + "T12:00:00"),
         complaints: items,
       }))
   }, [filteredComplaints])
