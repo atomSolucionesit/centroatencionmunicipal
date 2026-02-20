@@ -25,6 +25,10 @@ const Popup = dynamic(
   () => import("react-leaflet").then((mod) => mod.Popup),
   { ssr: false }
 )
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+)
 
 interface DriversMapProps {
   drivers: DriverStatus[]
@@ -32,9 +36,11 @@ interface DriversMapProps {
 
 export function DriversMap({ drivers }: DriversMapProps) {
   const [mounted, setMounted] = useState(false)
+  const [L, setL] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
+    import("leaflet").then((leaflet) => setL(leaflet))
   }, [])
 
   if (!mounted) {
@@ -51,6 +57,16 @@ export function DriversMap({ drivers }: DriversMapProps) {
   const center = driversWithLocation.length > 0
     ? [driversWithLocation[0].lastLocation!.lat, driversWithLocation[0].lastLocation!.lng]
     : [-34.6037, -58.3816] // Buenos Aires default
+
+  const truckIcon = L ? L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#2563eb" stroke="white" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="2" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>`,
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  }) : undefined
+
+  const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 
   return (
     <div className="space-y-4">
@@ -72,16 +88,38 @@ export function DriversMap({ drivers }: DriversMapProps) {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
-              {driversWithLocation.map((driver) => (
-                <Marker
-                  key={driver.driver.id}
-                  position={[driver.lastLocation!.lat, driver.lastLocation!.lng]}
-                >
-                  <Popup>
-                    <p className="font-semibold">{driver.driver.name}</p>
-                  </Popup>
-                </Marker>
-              ))}
+              {driversWithLocation.map((driver, index) => {
+                const routeColor = colors[index % colors.length]
+                const route = driver.locationHistory && driver.locationHistory.length > 1
+                  ? driver.locationHistory.map(loc => [loc.lat, loc.lng] as [number, number])
+                  : []
+                
+                return (
+                  <div key={driver.driver.id}>
+                    {route.length > 0 && (
+                      <Polyline
+                        positions={route}
+                        color={routeColor}
+                        weight={3}
+                        opacity={0.7}
+                      />
+                    )}
+                    <Marker
+                      position={[driver.lastLocation!.lat, driver.lastLocation!.lng]}
+                      icon={truckIcon}
+                    >
+                      <Popup>
+                        <div>
+                          <p className="font-semibold">{driver.driver.name}</p>
+                          {driver.vehicle && (
+                            <p className="text-sm text-gray-600">{driver.vehicle.licensePlate}</p>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  </div>
+                )
+              })}
             </MapContainer>
           </div>
         </CardContent>

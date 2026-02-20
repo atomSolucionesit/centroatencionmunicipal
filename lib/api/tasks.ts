@@ -32,6 +32,11 @@ export interface DriverStatus {
     lng: number;
     timestamp: string;
   } | null;
+  locationHistory?: {
+    lat: number;
+    lng: number;
+    timestamp: string;
+  }[];
 }
 
 class TasksApiService {
