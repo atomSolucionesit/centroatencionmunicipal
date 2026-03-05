@@ -149,6 +149,7 @@ export function ComplaintForm({ onSubmit }: ComplaintFormProps) {
       longitude,
     })
 
+    
     setCitizenName("")
     setCitizenDni("")
     setAddress("")

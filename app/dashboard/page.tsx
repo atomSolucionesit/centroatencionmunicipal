@@ -60,14 +60,14 @@ export default function DashboardPage() {
       router.replace("/");
       return;
     }
-    
+
     if (!loading && isAuthenticated) {
       loadComplaints();
-      
+
       const interval = setInterval(() => {
         loadComplaints(false);
       }, 5000);
-      
+
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, loading, loadComplaints]);

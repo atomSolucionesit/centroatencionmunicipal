@@ -1,98 +1,127 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { format, isSameDay } from "date-fns"
-import { es } from "date-fns/locale"
-import type { Complaint, Status, Sector, TaskType } from "@/lib/types"
-import { StatsCards } from "./stats-cards"
-import { DashboardFilters } from "./dashboard-filters"
-import { ComplaintsTable } from "./complaints-table"
+import { useState, useMemo } from "react";
+import { format, isSameDay } from "date-fns";
+import { es } from "date-fns/locale";
+import type { Complaint, Status, Sector, TaskType } from "@/lib/types";
+import { StatsCards } from "./stats-cards";
+import { DashboardFilters } from "./dashboard-filters";
+import { ComplaintsTable } from "./complaints-table";
 
 interface DashboardProps {
-  complaints: Complaint[]
-  onStatusChange: (id: string, status: Status) => void
-  onAreaChange?: (id: string, area: string) => void
-  onRefresh?: () => void
-  userRole?: string
-  userArea?: string
+  complaints: Complaint[];
+  onStatusChange: (id: string, status: Status) => void;
+  onAreaChange?: (id: string, area: string) => void;
+  onRefresh?: () => void;
+  userRole?: string;
+  userArea?: string;
 }
 
-export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh, userRole, userArea }: DashboardProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [selectedSector, setSelectedSector] = useState<Sector | "all">("all")
-  const [selectedTask, setSelectedTask] = useState<TaskType | "all">("all")
-  const [selectedStatus, setSelectedStatus] = useState<Status | "all">("all")
-  const [searchId, setSearchId] = useState("")
-  const [searchCitizen, setSearchCitizen] = useState("")
-  const [searchAddress, setSearchAddress] = useState("")
+export function Dashboard({
+  complaints,
+  onStatusChange,
+  onAreaChange,
+  onRefresh,
+  userRole,
+  userArea,
+}: DashboardProps) {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedSector, setSelectedSector] = useState<Sector | "all">("all");
+  const [selectedTask, setSelectedTask] = useState<TaskType | "all">("all");
+  const [selectedStatus, setSelectedStatus] = useState<Status | "all">("all");
+  const [searchId, setSearchId] = useState("");
+  const [searchCitizen, setSearchCitizen] = useState("");
+  const [searchAddress, setSearchAddress] = useState("");
 
   // Filtrar reclamos por área del usuario
   const areaFilteredComplaints = useMemo(() => {
-    if (userRole === "ADMIN" || userArea === "operador") {
-      return complaints
+    if (userRole === "ADMIN" || userArea?.toLowerCase() === "operador") {
+      return complaints;
     }
-    return complaints.filter(c => c.area === userArea)
-  }, [complaints, userRole, userArea])
+    return complaints.filter((c) => c.area === userArea);
+  }, [complaints, userRole, userArea]);
 
   const filteredComplaints = useMemo(() => {
     return areaFilteredComplaints.filter((complaint) => {
       if (selectedDate && !isSameDay(complaint.createdAt, selectedDate)) {
-        return false
+        return false;
       }
       if (selectedSector !== "all" && complaint.sector !== selectedSector) {
-        return false
+        return false;
       }
       if (selectedTask !== "all" && complaint.taskType !== selectedTask) {
-        return false
+        return false;
       }
       if (selectedStatus !== "all" && complaint.status !== selectedStatus) {
-        return false
+        return false;
       }
-      if (searchId && !complaint.id.toLowerCase().includes(searchId.toLowerCase())) {
-        return false
+      if (
+        searchId &&
+        !complaint.id.toLowerCase().includes(searchId.toLowerCase())
+      ) {
+        return false;
       }
-      if (searchCitizen && !complaint.citizenName.toLowerCase().includes(searchCitizen.toLowerCase())) {
-        return false
+      if (
+        searchCitizen &&
+        !complaint.citizenName
+          .toLowerCase()
+          .includes(searchCitizen.toLowerCase())
+      ) {
+        return false;
       }
-      if (searchAddress && !complaint.address.toLowerCase().includes(searchAddress.toLowerCase())) {
-        return false
+      if (
+        searchAddress &&
+        !complaint.address.toLowerCase().includes(searchAddress.toLowerCase())
+      ) {
+        return false;
       }
-      return true
-    })
-  }, [areaFilteredComplaints, selectedDate, selectedSector, selectedTask, selectedStatus, searchId, searchCitizen, searchAddress])
+      return true;
+    });
+  }, [
+    areaFilteredComplaints,
+    selectedDate,
+    selectedSector,
+    selectedTask,
+    selectedStatus,
+    searchId,
+    searchCitizen,
+    searchAddress,
+  ]);
 
   // Group complaints by date
   const groupedByDate = useMemo(() => {
-    const groups: Record<string, Complaint[]> = {}
+    const groups: Record<string, Complaint[]> = {};
     for (const complaint of filteredComplaints) {
-      const dateKey = format(new Date(complaint.createdAt), "yyyy-MM-dd")
+      const dateKey = format(new Date(complaint.createdAt), "yyyy-MM-dd");
       if (!groups[dateKey]) {
-        groups[dateKey] = []
+        groups[dateKey] = [];
       }
-      groups[dateKey].push(complaint)
+      groups[dateKey].push(complaint);
     }
     return Object.entries(groups)
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([dateKey, items]) => ({
         date: new Date(dateKey + "T12:00:00"),
         complaints: items,
-      }))
-  }, [filteredComplaints])
+      }));
+  }, [filteredComplaints]);
 
   const handleClearFilters = () => {
-    setSelectedDate(undefined)
-    setSelectedSector("all")
-    setSelectedTask("all")
-    setSelectedStatus("all")
-    setSearchId("")
-    setSearchCitizen("")
-    setSearchAddress("")
-  }
+    setSelectedDate(undefined);
+    setSelectedSector("all");
+    setSelectedTask("all");
+    setSelectedStatus("all");
+    setSearchId("");
+    setSearchCitizen("");
+    setSearchAddress("");
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-foreground">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+          Dashboard
+        </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
           Gestiona los reclamos y solicitudes ciudadanas
         </p>
@@ -120,7 +149,8 @@ export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh,
         />
 
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Mostrando {filteredComplaints.length} de {areaFilteredComplaints.length} reclamos
+          Mostrando {filteredComplaints.length} de{" "}
+          {areaFilteredComplaints.length} reclamos
         </div>
       </div>
 
@@ -150,5 +180,5 @@ export function Dashboard({ complaints, onStatusChange, onAreaChange, onRefresh,
         )}
       </div>
     </div>
-  )
+  );
 }

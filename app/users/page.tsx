@@ -77,13 +77,21 @@ export default function UsersPage() {
           lastName: formData.lastName,
           email: formData.email,
           role: formData.role,
-          area: formData.area
+          area: formData.area,
         });
         if (result.mensaje === "editado") {
           toast.success("Usuario actualizado exitosamente");
           setOpen(false);
           setEditingUser(null);
-          setFormData({ firstName: "", lastName: "", dni: "", email: "", password: "", role: "OPERATOR", area: "operador" });
+          setFormData({
+            firstName: "",
+            lastName: "",
+            dni: "",
+            email: "",
+            password: "",
+            role: "OPERATOR",
+            area: "operador",
+          });
           loadUsers();
         } else {
           toast.error("Error al actualizar usuario");
@@ -96,14 +104,24 @@ export default function UsersPage() {
         if (result.mensaje === "add") {
           toast.success("Usuario creado exitosamente");
           setOpen(false);
-          setFormData({ firstName: "", lastName: "", dni: "", email: "", password: "", role: "OPERATOR", area: "operador" });
+          setFormData({
+            firstName: "",
+            lastName: "",
+            dni: "",
+            email: "",
+            password: "",
+            role: "OPERATOR",
+            area: "operador",
+          });
           loadUsers();
         } else {
           toast.error(result.mensaje || "Error al crear usuario");
         }
       }
     } catch (error) {
-      toast.error(editingUser ? "Error al actualizar usuario" : "Error al crear usuario");
+      toast.error(
+        editingUser ? "Error al actualizar usuario" : "Error al crear usuario",
+      );
     }
   };
 
@@ -111,7 +129,10 @@ export default function UsersPage() {
     e.preventDefault();
     if (!selectedUser || !newPassword) return;
     try {
-      const result = await usersApi.adminChangePassword(selectedUser.id, newPassword);
+      const result = await usersApi.adminChangePassword(
+        selectedUser.id,
+        newPassword,
+      );
       if (result.mensaje === "update") {
         toast.success("Contraseña actualizada exitosamente");
         setPasswordDialogOpen(false);
@@ -143,19 +164,32 @@ export default function UsersPage() {
         <div className="container mx-auto max-w-7xl px-4 py-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-            <Dialog open={open} onOpenChange={(isOpen) => {
-              setOpen(isOpen);
-              if (!isOpen) {
-                setEditingUser(null);
-                setFormData({ firstName: "", lastName: "", dni: "", email: "", password: "", role: "OPERATOR", area: "operador" });
-              }
-            }}>
+            <Dialog
+              open={open}
+              onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (!isOpen) {
+                  setEditingUser(null);
+                  setFormData({
+                    firstName: "",
+                    lastName: "",
+                    dni: "",
+                    email: "",
+                    password: "",
+                    role: "OPERATOR",
+                    area: "operador",
+                  });
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>Crear Usuario</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{editingUser ? "Editar Usuario" : "Crear Nuevo Usuario"}</DialogTitle>
+                  <DialogTitle>
+                    {editingUser ? "Editar Usuario" : "Crear Nuevo Usuario"}
+                  </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
@@ -246,9 +280,9 @@ export default function UsersPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="operador">Operador</SelectItem>
-                          <SelectItem value="corralon">Corralón</SelectItem>
-                          <SelectItem value="alumbrado">Alumbrado</SelectItem>
+                          <SelectItem value="OPERADOR">Operador</SelectItem>
+                          <SelectItem value="CORRALON">Corralón</SelectItem>
+                          <SelectItem value="ALUMBRADO">Alumbrado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -302,7 +336,7 @@ export default function UsersPage() {
                                   email: u.correo,
                                   password: "",
                                   role: u.tipo,
-                                  area: u.area || "operador"
+                                  area: u.area || "operador",
                                 });
                                 setOpen(true);
                               }}
@@ -329,7 +363,10 @@ export default function UsersPage() {
             </CardContent>
           </Card>
 
-          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+          <Dialog
+            open={passwordDialogOpen}
+            onOpenChange={setPasswordDialogOpen}
+          >
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Cambiar Contraseña</DialogTitle>
@@ -337,7 +374,14 @@ export default function UsersPage() {
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
                   <Label>Usuario</Label>
-                  <Input value={selectedUser ? `${selectedUser.nombre} ${selectedUser.apellido}` : ""} disabled />
+                  <Input
+                    value={
+                      selectedUser
+                        ? `${selectedUser.nombre} ${selectedUser.apellido}`
+                        : ""
+                    }
+                    disabled
+                  />
                 </div>
                 <div>
                   <Label>Nueva Contraseña</Label>
