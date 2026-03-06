@@ -33,40 +33,53 @@ interface TasksListProps {
   userRole?: string;
 }
 
-export function TasksList({ complaints, drivers, onAssignDriver, userArea, userRole }: TasksListProps) {
-  const [selectedDrivers, setSelectedDrivers] = useState<Record<string, string>>({});
+export function TasksList({
+  complaints,
+  drivers,
+  onAssignDriver,
+  userArea,
+  userRole,
+}: TasksListProps) {
+  const [selectedDrivers, setSelectedDrivers] = useState<
+    Record<string, string>
+  >({});
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtrar reclamos por área
   const areaFilteredComplaints = useMemo(() => {
-    if (userRole === "ADMIN" || userArea === "operador") {
+    const role = userRole?.toUpperCase();
+    const area = userArea?.toLowerCase();
+
+    if (role === "ADMIN" || role === "OPERATOR" || area === "operador") {
       return complaints;
     }
-    return complaints.filter(c => c.area === userArea);
+
+    return complaints.filter((c) => c.area?.toLowerCase() === area);
   }, [complaints, userRole, userArea]);
 
   // Filtrar por búsqueda
   const filteredComplaints = useMemo(() => {
     if (!searchTerm) return areaFilteredComplaints;
-    
+
     const term = searchTerm.toLowerCase();
-    return areaFilteredComplaints.filter(c => 
-      c.id.toLowerCase().includes(term) ||
-      c.citizenName.toLowerCase().includes(term) ||
-      c.address.toLowerCase().includes(term) ||
-      c.taskType.toLowerCase().includes(term)
+    return areaFilteredComplaints.filter(
+      (c) =>
+        c.id.toLowerCase().includes(term) ||
+        c.citizenName.toLowerCase().includes(term) ||
+        c.address.toLowerCase().includes(term) ||
+        c.taskType.toLowerCase().includes(term),
     );
   }, [areaFilteredComplaints, searchTerm]);
 
   const handleDriverSelect = (complaintId: string, driverId: string) => {
-    setSelectedDrivers(prev => ({ ...prev, [complaintId]: driverId }));
+    setSelectedDrivers((prev) => ({ ...prev, [complaintId]: driverId }));
   };
 
   const handleAssign = (complaintId: string) => {
     const driverId = selectedDrivers[complaintId];
     if (driverId) {
       onAssignDriver(complaintId, driverId);
-      setSelectedDrivers(prev => {
+      setSelectedDrivers((prev) => {
         const newState = { ...prev };
         delete newState[complaintId];
         return newState;
@@ -75,7 +88,10 @@ export function TasksList({ complaints, drivers, onAssignDriver, userArea, userR
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
       Pendiente: "secondary",
       "En Proceso": "default",
       Completado: "outline",
@@ -114,19 +130,26 @@ export function TasksList({ complaints, drivers, onAssignDriver, userArea, userR
           <TableBody>
             {filteredComplaints.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={10}
+                  className="text-center text-muted-foreground"
+                >
                   No se encontraron reclamos
                 </TableCell>
               </TableRow>
             ) : (
               filteredComplaints.map((complaint) => (
                 <TableRow key={complaint.id}>
-                  <TableCell className="font-mono text-xs">{complaint.id.slice(0, 8)}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {complaint.id.slice(0, 8)}
+                  </TableCell>
                   <TableCell className="text-sm">
                     {format(complaint.createdAt, "dd/MM/yyyy", { locale: es })}
                   </TableCell>
                   <TableCell>{complaint.citizenName}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{complaint.address}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    {complaint.address}
+                  </TableCell>
                   <TableCell>{complaint.taskType}</TableCell>
                   <TableCell>{getStatusBadge(complaint.status)}</TableCell>
                   <TableCell>
@@ -135,27 +158,37 @@ export function TasksList({ complaints, drivers, onAssignDriver, userArea, userR
                   <TableCell>
                     {complaint.assignedDriverId ? (
                       <span className="text-sm">
-                        {drivers.find(d => d.id === complaint.assignedDriverId)?.nombre || "Asignado"}
+                        {drivers.find(
+                          (d) => d.id === complaint.assignedDriverId,
+                        )?.nombre || "Asignado"}
                       </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground">Sin asignar</span>
+                      <span className="text-sm text-muted-foreground">
+                        Sin asignar
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
                     {(complaint as any).task ? (
-                      <Badge variant="default" className="bg-green-600">✓ Creada</Badge>
+                      <Badge variant="default" className="bg-green-600">
+                        ✓ Creada
+                      </Badge>
                     ) : (
                       <Badge variant="secondary">Pendiente</Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     {(complaint as any).task ? (
-                      <span className="text-xs text-muted-foreground">Tarea asignada</span>
+                      <span className="text-xs text-muted-foreground">
+                        Tarea asignada
+                      </span>
                     ) : (
                       <div className="flex items-center gap-2">
                         <Select
                           value={selectedDrivers[complaint.id] || ""}
-                          onValueChange={(value) => handleDriverSelect(complaint.id, value)}
+                          onValueChange={(value) =>
+                            handleDriverSelect(complaint.id, value)
+                          }
                           disabled={!!complaint.assignedDriverId}
                         >
                           <SelectTrigger className="w-[150px] h-8">
@@ -172,7 +205,10 @@ export function TasksList({ complaints, drivers, onAssignDriver, userArea, userR
                         <Button
                           size="sm"
                           onClick={() => handleAssign(complaint.id)}
-                          disabled={!selectedDrivers[complaint.id] || !!complaint.assignedDriverId}
+                          disabled={
+                            !selectedDrivers[complaint.id] ||
+                            !!complaint.assignedDriverId
+                          }
                         >
                           Asignar
                         </Button>
@@ -187,7 +223,8 @@ export function TasksList({ complaints, drivers, onAssignDriver, userArea, userR
       </div>
 
       <div className="text-sm text-muted-foreground">
-        Mostrando {filteredComplaints.length} de {areaFilteredComplaints.length} reclamos
+        Mostrando {filteredComplaints.length} de {areaFilteredComplaints.length}{" "}
+        reclamos
       </div>
     </div>
   );

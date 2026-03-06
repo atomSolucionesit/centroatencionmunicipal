@@ -35,10 +35,17 @@ export function Dashboard({
 
   // Filtrar reclamos por área del usuario
   const areaFilteredComplaints = useMemo(() => {
-    if (userRole === "ADMIN" || userArea?.toLowerCase() === "operador") {
+    const role = userRole?.toUpperCase();
+    const area = userArea?.toLowerCase();
+
+    // Administradores y Operadores ven todos los reclamos
+    // El área "operador" también es un rol comodín que ve todo
+    if (role === "ADMIN" || role === "OPERATOR" || area === "operador") {
       return complaints;
     }
-    return complaints.filter((c) => c.area === userArea);
+
+    // Otros roles (como MANAGER) ven solo su área asignada (comparación insensible a mayúsculas)
+    return complaints.filter((c) => c.area?.toLowerCase() === area);
   }, [complaints, userRole, userArea]);
 
   const filteredComplaints = useMemo(() => {
