@@ -38,7 +38,6 @@ export function Dashboard({
     const role = userRole?.toUpperCase();
     const area = userArea?.toLowerCase();
 
-    // Administradores y Operadores ven todos los reclamos
     // El área "operador" también es un rol comodín que ve todo
     if (role === "ADMIN" || role === "OPERATOR" || area === "operador") {
       return complaints;
