@@ -10,7 +10,8 @@ export interface ApiComplaint {
   sector: string;
   taskType: string;
   area?: string;
-  status: 'URGENTE' | 'ESPERA' | 'EN_PROCESO' | 'LISTO';
+  userId?: string;
+  status: "URGENTE" | "ESPERA" | "EN_PROCESO" | "LISTO";
   assignedDriverId?: string;
   taskId?: string;
   latitude?: number;
@@ -49,21 +50,29 @@ export interface CreateComplaintRequest {
 
 class ComplaintsApiService {
   async createComplaint(data: CreateComplaintRequest): Promise<ApiComplaint> {
-    const response = await apiClient.post('/complaints', data);
+    const response = await apiClient.post("/complaints", data);
     return response.data;
   }
 
-  async getComplaints(status?: string, sector?: string): Promise<ApiComplaint[]> {
+  async getComplaints(
+    status?: string,
+    sector?: string,
+  ): Promise<ApiComplaint[]> {
     const params: any = {};
     if (status) params.status = status;
     if (sector) params.sector = sector;
 
-    const response = await apiClient.get('/complaints', { params });
+    const response = await apiClient.get("/complaints", { params });
     return response.data;
   }
 
-  async updateComplaintStatus(id: string, status: string): Promise<ApiComplaint> {
-    const response = await apiClient.patch(`/complaints/${id}/status`, { status });
+  async updateComplaintStatus(
+    id: string,
+    status: string,
+  ): Promise<ApiComplaint> {
+    const response = await apiClient.patch(`/complaints/${id}/status`, {
+      status,
+    });
     return response.data;
   }
 
@@ -73,7 +82,9 @@ class ComplaintsApiService {
   }
 
   async assignDriver(id: string, driverId: string): Promise<ApiComplaint> {
-    const response = await apiClient.patch(`/complaints/${id}/assign`, { driverId });
+    const response = await apiClient.patch(`/complaints/${id}/assign`, {
+      driverId,
+    });
     return response.data;
   }
 
@@ -83,7 +94,9 @@ class ComplaintsApiService {
   }
 
   async addObservation(id: string, observation: string): Promise<any> {
-    const response = await apiClient.post(`/complaints/${id}/observations`, { observation });
+    const response = await apiClient.post(`/complaints/${id}/observations`, {
+      observation,
+    });
     return response.data;
   }
 
@@ -94,6 +107,14 @@ class ComplaintsApiService {
 
   async deleteComplaint(id: string): Promise<{ message: string }> {
     const response = await apiClient.delete(`/complaints/${id}`);
+    return response.data;
+  }
+
+  async updateComplaint(
+    id: string,
+    data: Partial<CreateComplaintRequest>,
+  ): Promise<ApiComplaint> {
+    const response = await apiClient.patch(`/complaints/${id}`, data);
     return response.data;
   }
 }

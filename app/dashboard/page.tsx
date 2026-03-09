@@ -25,6 +25,7 @@ const mapApiComplaintToComplaint = (apiComplaint: ApiComplaint): Complaint => ({
   taskType: apiComplaint.taskType as TaskType,
   status: apiComplaint.status as Status,
   area: apiComplaint.area,
+  userId: apiComplaint.userId,
   zone: "Centro",
   assignedDriverId: apiComplaint.assignedDriverId,
   completedAt: undefined,
@@ -196,6 +197,7 @@ export default function DashboardPage() {
               onRefresh={loadComplaints}
               userRole={user?.role}
               userArea={user?.area}
+              currentUserId={user?.id}
             />
           ) : (
             <div className="py-4 sm:py-8">
